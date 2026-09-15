@@ -11,7 +11,10 @@ export class DesignSystemToA2uiAgent {
     const outDir = resolve(options.outDir);
     mkdirSync(outDir, { recursive: true });
 
-    const inventory = scanDesignSystem(input);
+    const inventory = scanDesignSystem(input, {
+      manifestPath: options.manifestPath,
+      fillMissing: options.fillMissing,
+    });
     const { catalog, mapping } = buildCatalog(inventory, {
       catalogId: options.catalogId,
       name: options.name ?? inventory.name,

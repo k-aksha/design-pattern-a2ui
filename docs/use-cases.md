@@ -118,7 +118,16 @@ npx tsx src/cli.ts convert ./packages/ui --catalogId https://yourco.com/a2ui/v0.
 
 **Problem:** Auto-scan picks up too many files, or you must **only** expose a curated subset of components to agents.
 
-**What you run:** Add [`a2ui.manifest.json`](../examples/acme-ds/a2ui.manifest.json) listing allowed components and props. Manifest entries take precedence over duplicate names from scan.
+**What you run:**
+
+```bash
+npx tsx src/cli.ts scan ./packages/ui --project ./packages/ui/tsconfig.json
+# edit a2ui.manifest.json and scan-report.md
+npx tsx src/cli.ts validate ./packages/ui
+npx tsx src/cli.ts convert ./packages/ui
+```
+
+Or hand-write [`a2ui.manifest.json`](../examples/acme-ds/a2ui.manifest.json) listing allowed components and props.
 
 **Example:**
 
@@ -130,6 +139,7 @@ npx tsx src/cli.ts convert ./packages/ui --catalogId https://yourco.com/a2ui/v0.
     {
       "name": "Button",
       "source": "components/Button.tsx",
+      "includeInCatalog": true,
       "props": [
         { "name": "label", "kind": "string", "required": true },
         { "name": "variant", "kind": "enum", "enumValues": ["primary", "ghost"] }
@@ -139,7 +149,7 @@ npx tsx src/cli.ts convert ./packages/ui --catalogId https://yourco.com/a2ui/v0.
 }
 ```
 
-**Next steps:** Treat the manifest as your security boundary — only registered names appear in `catalog.json`.
+**Next steps:** Treat the manifest as your security boundary — only components with `includeInCatalog: true` appear in `catalog.json`. See [manifest workflow](./manifest.md).
 
 **Not covered:** Runtime sandboxing of agent actions; you still validate `action` payloads in the client.
 

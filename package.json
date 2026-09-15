@@ -13,13 +13,17 @@
   "scripts": {
     "build": "tsc",
     "convert": "tsx src/cli.ts convert",
-    "test": "tsx --test src/agent.test.ts",
+    "test": "tsx --test src/agent.test.ts src/manifest/generate.test.ts",
     "example": "tsx src/cli.ts convert examples/acme-ds --out examples/acme-ds/a2ui"
   },
   "engines": {
     "node": ">=20"
   },
   "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "manifest.schema.json"
+  ],
   "dependencies": {
     "typescript": "^5.9.2"
   },

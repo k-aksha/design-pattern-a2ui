@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-pattern-a2ui.dev/schemas/manifest.schema.json",
+  "title": "A2UI Design System Manifest",
+  "description": "Explicit inventory of components and props exposed to A2UI agents.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for editor validation."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Design system identifier."
+    },
+    "catalogId": {
+      "type": "string",
+      "format": "uri",
+      "description": "Stable URI for the generated A2UI catalog."
+    },
+    "components": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/component" }
+    }
+  },
+  "$defs": {
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$",
+          "description": "PascalCase catalog component name."
+        },
+        "exportName": {
+          "type": "string",
+          "description": "Source export symbol when different from name."
+        },
+        "source": {
+          "type": "string",
+          "description": "Relative path to the component source file."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable component summary."
+        },
+        "includeInCatalog": {
+          "type": "boolean",
+          "default": true,
+          "description": "When false, convert skips this component."
+        },
+        "props": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/prop" }
+        }
+      }
+    },
+    "prop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["string", "number", "boolean", "enum", "children", "action", "unknown"]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "enumValues": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "defaultValue": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" }
+          ]
+        }
+      }
+    }
+  }
+}

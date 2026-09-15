@@ -46,6 +46,8 @@ export type ConversionOptions = {
   catalogId?: string;
   name?: string;
   includeBasicLayout?: boolean;
+  manifestPath?: string;
+  fillMissing?: boolean;
 };
 
 export type ConversionResult = {

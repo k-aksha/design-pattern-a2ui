@@ -1,4 +1,121 @@
 {
+  "$schema": "./node_modules/design-pattern-a2ui/manifest.schema.json",
   "name": "acme-ds",
-  "catalogId": "https://acme.example/a2ui/v0.9/catalog.json"
+  "catalogId": "https://acme.example/a2ui/v0.9/catalog.json",
+  "components": [
+    {
+      "name": "Alert",
+      "exportName": "Alert",
+      "source": "components/Alert.tsx",
+      "includeInCatalog": true,
+      "props": [
+        {
+          "name": "message",
+          "kind": "string",
+          "required": true
+        },
+        {
+          "name": "tone",
+          "kind": "enum",
+          "required": false,
+          "enumValues": [
+            "info",
+            "success",
+            "warning",
+            "danger"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Button",
+      "exportName": "Button",
+      "source": "components/Button.tsx",
+      "description": "Primary call-to-action and secondary buttons.",
+      "includeInCatalog": true,
+      "props": [
+        {
+          "name": "label",
+          "kind": "string",
+          "required": true
+        },
+        {
+          "name": "variant",
+          "kind": "enum",
+          "required": false,
+          "enumValues": [
+            "primary",
+            "secondary",
+            "ghost"
+          ]
+        },
+        {
+          "name": "disabled",
+          "kind": "boolean",
+          "required": false
+        },
+        {
+          "name": "onPress",
+          "kind": "action",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Card",
+      "exportName": "Card",
+      "source": "components/Card.tsx",
+      "includeInCatalog": true,
+      "props": [
+        {
+          "name": "title",
+          "kind": "string",
+          "required": true
+        },
+        {
+          "name": "subtitle",
+          "kind": "string",
+          "required": false
+        },
+        {
+          "name": "children",
+          "kind": "children",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TextField",
+      "exportName": "TextField",
+      "source": "components/TextField.tsx",
+      "includeInCatalog": true,
+      "props": [
+        {
+          "name": "label",
+          "kind": "string",
+          "required": true
+        },
+        {
+          "name": "value",
+          "kind": "string",
+          "required": false
+        },
+        {
+          "name": "placeholder",
+          "kind": "string",
+          "required": false
+        },
+        {
+          "name": "required",
+          "kind": "boolean",
+          "required": false
+        },
+        {
+          "name": "onChange",
+          "kind": "action",
+          "required": false
+        }
+      ]
+    }
+  ]
 }

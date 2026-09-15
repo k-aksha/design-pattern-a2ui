@@ -1,5 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { extname, join, relative, resolve } from "node:path";
+import { readManifestDocument } from "./manifest/agent.js";
+import type { ManifestComponent } from "./manifest/types.js";
 import type { DesignSystemInventory, DiscoveredComponent, DesignToken } from "./types.js";
 import { inferKind, toPascalCase } from "./naming.js";
 import { parseComponentFile } from "./parse-components.js";
@@ -19,67 +21,84 @@ const SKIP_DIRS = new Set([
 const COMPONENT_EXTS = new Set([".tsx", ".ts", ".jsx", ".js", ".vue"]);
 const TOKEN_JSON_HINT = /token|theme|palette|colors|typography/i;
 
-export function scanDesignSystem(root: string): DesignSystemInventory {
+export type ScanDesignSystemOptions = {
+  manifestPath?: string;
+  fillMissing?: boolean;
+};
+
+export function scanDesignSystem(
+  root: string,
+  options: ScanDesignSystemOptions = {},
+): DesignSystemInventory {
   const abs = resolve(root);
   if (!existsSync(abs)) {
     throw new Error(`Design system path not found: ${abs}`);
   }
 
-  const manifest = readManifest(abs);
+  const manifest = readManifestDocument(abs, options.manifestPath);
   const files = walkFiles(abs);
   const components: DiscoveredComponent[] = [];
   const tokens: DesignToken[] = [];
   const seenNames = new Set<string>();
+  const manifestPrimary = Boolean(manifest?.components?.length);
 
-  if (manifest?.components?.length) {
-    for (const entry of manifest.components) {
-      const name = toPascalCase(entry.name);
-      components.push({
-        name,
-        exportName: entry.exportName ?? name,
-        sourcePath: entry.source ?? "manifest",
-        description: entry.description,
-        props: (entry.props ?? []).map((prop) => ({
-          name: prop.name,
-          kind: prop.kind ?? inferKind(prop.name, prop.enumValues),
-          required: Boolean(prop.required),
-          description: prop.description,
-          enumValues: prop.enumValues,
-          defaultValue: prop.defaultValue,
-        })),
-      });
-      seenNames.add(name);
+  if (manifestPrimary) {
+    for (const entry of manifest!.components!) {
+      if (entry.includeInCatalog === false) continue;
+      const component = manifestEntryToDiscovered(entry, abs);
+      components.push(component);
+      seenNames.add(component.name);
     }
   }
 
-  for (const file of files) {
-    const ext = extname(file).toLowerCase();
-    const rel = relative(abs, file);
+  if (!manifestPrimary || options.fillMissing) {
+    for (const file of files) {
+      const ext = extname(file).toLowerCase();
+      const rel = relative(abs, file);
 
-    if (ext === ".css") {
-      tokens.push(...extractCssTokens(file, readFileSync(file, "utf8")));
-      continue;
-    }
-
-    if (ext === ".json" && TOKEN_JSON_HINT.test(rel) && !rel.endsWith("package.json")) {
-      try {
-        tokens.push(...extractJsonTokens(file, JSON.parse(readFileSync(file, "utf8"))));
-      } catch {
-        // Ignore non-token JSON.
+      if (ext === ".css") {
+        tokens.push(...extractCssTokens(file, readFileSync(file, "utf8")));
+        continue;
       }
-      continue;
+
+      if (ext === ".json" && TOKEN_JSON_HINT.test(rel) && !rel.endsWith("package.json")) {
+        try {
+          tokens.push(...extractJsonTokens(file, JSON.parse(readFileSync(file, "utf8"))));
+        } catch {
+          // Ignore non-token JSON.
+        }
+        continue;
+      }
+
+      if (!COMPONENT_EXTS.has(ext)) continue;
+      if (/\.d\.ts$/.test(file) || /\.test\.|\.spec\.|\.stories\./i.test(file)) continue;
+
+      for (const component of parseComponentFile(file, readFileSync(file, "utf8"))) {
+        if (seenNames.has(component.name)) continue;
+        seenNames.add(component.name);
+        components.push({
+          ...component,
+          sourcePath: relative(abs, component.sourcePath) || component.sourcePath,
+        });
+      }
     }
+  } else {
+    for (const file of files) {
+      const ext = extname(file).toLowerCase();
+      const rel = relative(abs, file);
 
-    if (!COMPONENT_EXTS.has(ext)) continue;
-    if (/\.d\.ts$/.test(file) || /\.test\.|\.spec\.|\.stories\./i.test(file)) continue;
+      if (ext === ".css") {
+        tokens.push(...extractCssTokens(file, readFileSync(file, "utf8")));
+        continue;
+      }
 
-    for (const component of parseComponentFile(file, readFileSync(file, "utf8"))) {
-      if (seenNames.has(component.name)) continue;
-      seenNames.add(component.name);
-      components.push({
-        ...component,
-        sourcePath: relative(abs, component.sourcePath) || component.sourcePath,
-      });
+      if (ext === ".json" && TOKEN_JSON_HINT.test(rel) && !rel.endsWith("package.json")) {
+        try {
+          tokens.push(...extractJsonTokens(file, JSON.parse(readFileSync(file, "utf8"))));
+        } catch {
+          // Ignore non-token JSON.
+        }
+      }
     }
   }
 
@@ -92,32 +111,22 @@ export function scanDesignSystem(root: string): DesignSystemInventory {
   };
 }
 
-type Manifest = {
-  name?: string;
-  catalogId?: string;
-  components?: Array<{
-    name: string;
-    exportName?: string;
-    source?: string;
-    description?: string;
-    props?: Array<{
-      name: string;
-      kind?: DiscoveredComponent["props"][number]["kind"];
-      required?: boolean;
-      description?: string;
-      enumValues?: string[];
-      defaultValue?: string | number | boolean;
-    }>;
-  }>;
-};
-
-function readManifest(root: string): Manifest | undefined {
-  for (const name of ["a2ui.manifest.json", "design-system.manifest.json"]) {
-    const path = join(root, name);
-    if (!existsSync(path)) continue;
-    return JSON.parse(readFileSync(path, "utf8")) as Manifest;
-  }
-  return undefined;
+function manifestEntryToDiscovered(entry: ManifestComponent, root: string): DiscoveredComponent {
+  const name = toPascalCase(entry.name);
+  return {
+    name,
+    exportName: entry.exportName ?? name,
+    sourcePath: entry.source ?? "manifest",
+    description: entry.description,
+    props: (entry.props ?? []).map((prop) => ({
+      name: prop.name,
+      kind: prop.kind ?? inferKind(prop.name, prop.enumValues),
+      required: Boolean(prop.required),
+      description: prop.description,
+      enumValues: prop.enumValues,
+      defaultValue: prop.defaultValue,
+    })),
+  };
 }
 
 function walkFiles(dir: string): string[] {
