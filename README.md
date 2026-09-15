@@ -6,6 +6,48 @@ Convert an existing design system into an [A2UI v0.9](https://a2ui.org/catalogs/
 
 A2UI recommends catalogs that **mirror your component library** rather than mapping the Basic Catalog through adapters. This tool automates that conversion offline (no Google SDK, no LLM calls).
 
+## How it works
+
+```mermaid
+flowchart TB
+  subgraph input [Your design system]
+    Components["React / Vue components"]
+    Tokens["CSS vars + token JSON"]
+    Manifest["a2ui.manifest.json optional"]
+  end
+
+  CLI["ds2a2ui convert"]
+
+  subgraph output [Generated artifacts]
+    Catalog["catalog.json"]
+    Prompt["agent-prompt.md"]
+    Capabilities["client-capabilities.json"]
+  end
+
+  subgraph runtime [Your product]
+    Client["A2UI client registers your widgets"]
+    Agent["GenUI agent emits UI"]
+    Handshake["supportedCatalogIds + createSurface"]
+  end
+
+  Components --> CLI
+  Tokens --> CLI
+  Manifest --> CLI
+  CLI --> Catalog
+  CLI --> Prompt
+  CLI --> Capabilities
+  Catalog --> Client
+  Catalog --> Agent
+  Prompt --> Agent
+  Capabilities --> Handshake
+  Client --> Handshake
+  Agent --> Handshake
+```
+
+1. **Scan** — read components, tokens, and optional manifest from your design-system folder.
+2. **Convert** — write an A2UI catalog and supporting files (offline, no LLM).
+3. **Integrate** — client and agent agree on `catalogId`; agent UI renders with your existing components.
+
 ## Who this is for
 
 | Persona | Job to be done |
