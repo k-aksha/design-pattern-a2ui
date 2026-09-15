@@ -1,0 +1,7 @@
+{
+  "v0.9": {
+    "supportedCatalogIds": [
+      "https://acme.example/a2ui/v0.9/catalog.json"
+    ]
+  }
+}

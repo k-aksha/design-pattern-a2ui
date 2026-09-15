@@ -1,0 +1,105 @@
+{
+  "catalogId": "https://acme.example/a2ui/v0.9/catalog.json",
+  "designSystem": "acme-ds",
+  "components": [
+    {
+      "catalogName": "Alert",
+      "sourcePath": "components/Alert.tsx",
+      "sourceExport": "Alert",
+      "props": [
+        {
+          "source": "message",
+          "catalog": "message",
+          "kind": "string"
+        },
+        {
+          "source": "tone",
+          "catalog": "tone",
+          "kind": "enum"
+        }
+      ]
+    },
+    {
+      "catalogName": "Button",
+      "sourcePath": "components/Button.tsx",
+      "sourceExport": "Button",
+      "props": [
+        {
+          "source": "label",
+          "catalog": "label",
+          "kind": "string"
+        },
+        {
+          "source": "variant",
+          "catalog": "variant",
+          "kind": "enum"
+        },
+        {
+          "source": "disabled",
+          "catalog": "disabled",
+          "kind": "boolean"
+        },
+        {
+          "source": "onPress",
+          "catalog": "action",
+          "kind": "action"
+        }
+      ]
+    },
+    {
+      "catalogName": "Card",
+      "sourcePath": "components/Card.tsx",
+      "sourceExport": "Card",
+      "props": [
+        {
+          "source": "title",
+          "catalog": "title",
+          "kind": "string"
+        },
+        {
+          "source": "subtitle",
+          "catalog": "subtitle",
+          "kind": "string"
+        },
+        {
+          "source": "children",
+          "catalog": "children",
+          "kind": "children"
+        }
+      ]
+    },
+    {
+      "catalogName": "TextField",
+      "sourcePath": "components/TextField.tsx",
+      "sourceExport": "TextField",
+      "props": [
+        {
+          "source": "label",
+          "catalog": "label",
+          "kind": "string"
+        },
+        {
+          "source": "value",
+          "catalog": "value",
+          "kind": "string"
+        },
+        {
+          "source": "placeholder",
+          "catalog": "placeholder",
+          "kind": "string"
+        },
+        {
+          "source": "required",
+          "catalog": "required",
+          "kind": "boolean"
+        },
+        {
+          "source": "onChange",
+          "catalog": "action",
+          "kind": "action"
+        }
+      ]
+    }
+  ],
+  "tokenCount": 11
+}
